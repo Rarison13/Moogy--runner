@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moggy Runner</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; background-color: #222; color: white; }
+        canvas { background: #000; display: block; margin: 20px auto; }
+    </style>
+</head>
+<body>
+    <h1>Moggy Runner 🚀🐱</h1>
+    <p>Pressione <strong>Espaço</strong> para pular e coletar tokens!</p>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const moggyImg = new Image();
+        moggyImg.src = "/mnt/data/A_pixel_art_style_cartoon_cat_character_named_Mogg.png";
+
+        const bgImg = new Image();
+        bgImg.src = "/mnt/data/A_pixel_art_style_futuristic_background_for_a_runn.png";
+
+        const tokenImg = new Image();
+        tokenImg.src = "/mnt/data/A_pixel_art_style_golden_coin_with_a_cat_paw_symbo.png";
+
+        moggyImg.onload = function() { console.log("Imagem do Moggy carregada"); };
+        bgImg.onload = function() { console.log("Imagem de fundo carregada"); };
+        tokenImg.onload = function() { console.log("Imagem do token carregada"); };
+
+        let moggy = { x: 50, y: 300, width: 50, height: 50, velocityY: 0, gravity: 0.5, jumping: false };
+        let tokens = [];
+        let score = 0;
+
+        function spawnToken() {
+            let token = { x: canvas.width, y: 300, width: 30, height: 30 };
+            tokens.push(token);
+        }
+        setInterval(spawnToken, 2000);
+
+        document.addEventListener("keydown", function(event) {
+            if (event.code === "Space" && !moggy.jumping) {
+                moggy.velocityY = -10;
+                moggy.jumping = true;
+            }
+        });
+
+        document.addEventListener("keyup", function(event) {
+            if (event.code === "Space") {
+                moggy.jumping = false;
+            }
+        });
+
+        function update() {
+            moggy.velocityY += moggy.gravity;
+            moggy.y += moggy.velocityY;
+
+            if (moggy.y > 300) {
+                moggy.y = 300;
+                moggy.velocityY = 0;
+            }
+
+            tokens.forEach((token, index) => {
+                token.x -= 5;
+                if (token.x + token.width < 0) {
+                    tokens.splice(index, 1);
+                }
+
+                if (moggy.x < token.x + token.width &&
+                    moggy.x + moggy.width > token.x &&
+                    moggy.y < token.y + token.height &&
+                    moggy.y + moggy.height > token.y) {
+                    tokens.splice(index, 1);
+                    score += 10;
+                }
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(moggyImg, moggy.x, moggy.y, moggy.width, moggy.height);
+
+            tokens.forEach(token => {
+                ctx.drawImage(tokenImg, token.x, token.y, token.width, token.height);
+            });
+
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText("Pontuação: " + score, 10, 30);
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+    </script>
+</body>
+</html>
